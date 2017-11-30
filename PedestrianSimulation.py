@@ -46,3 +46,13 @@ def run():
             print(p.x)
 
 run()
+
+# calculate social force between pedestrians
+# this will return a list of the x and y components of social
+# force for each pedestrian
+def betweenPedestriansForce(peds):
+    for p in peds:
+        print(p.x)
+
+
+
