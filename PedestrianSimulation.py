@@ -97,26 +97,29 @@ def run():
             write_ped_data(csv_writer, peds, t)
 
             t += dt
+
+            # calculate social force between pedestrians
+            # update array of pedestrians
+            def betweenPedestriansForce(peds):
+                A = 0.2  # chosen arbitrarily because the paper doesn't suggest anything
+                B = 5  # also chosen arbitrarily
+                for p1 in peds:  # for each pedestrian
+                    for p2 in peds:  # calculate the social force from each other pedestrian
+                        if p1 == p2:
+                            continue
+                        r = p1.rad + p2.rad
+                        d = np.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
+                        dy = np.abs(p1.y - p2.y)
+                        theta = np.arcsin(dy / d)
+                        f = A * np.exp((r - d) / B)
+                        fx = f * np.cos(theta)
+                        fy = f * np.sin(theta)
+                        p1.fx += fx
+                        p1.fy += fy
+
 run()
 
-# calculate social force between pedestrians
-# update array of pedestrians
-def betweenPedestriansForce(peds):
-    A = 0.2 # chosen arbitrarily because the paper doesn't suggest anything
-    B = 5 # also chosen arbitrarily
-    for p1 in peds: # for each pedestrian
-        for p2 in peds: # calculate the social force from each other pedestrian
-            if p1 == p2:
-                continue
-            r = p1.rad + p2.rad
-            d = np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
-            dy = np.abs(p1.y - p2.y)
-            theta = np.arcsin(dy/d)
-            f = A * np.exp((r-d)/B)
-            fx = f * np.cos(theta)
-            fy = f * np.sin(theta)
-            p1.fx += fx
-            p1.fy += fy
+
 
 
 
