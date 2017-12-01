@@ -21,6 +21,8 @@ class Pedestrian:
     def update_vel(self, dt):
         self.vx += self.fx*dt
         self.vy += self.fy*dt
+        self.fx = 0.0
+        self.fy = 0.0
         
 
 #Centered at 0, walls will go from -20 to +20
@@ -40,18 +42,7 @@ def create_columns(n_cols):
     return cols
 
 
-# calculate social force between pedestrians
-# update array
-def betweenPedestriansForce(peds):
-    A = 0.2 # chosen arbitrarily because the paper doesn't suggest anything
-    B = 5 # also chosen arbitrarily
-    for p1 in peds: # for each pedestrian
-        for p2 in peds: # calculate the social force from each other pedestrian
-            r = p1.rad + p2.rad
-            d = np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
-            f = A * np.exp((r-d)/B)
-
-
+# Change to set vel into wall = 0 if exists and force into wall = 0 if exists
 def wall_force(peds, dt):
     wall_X = wallXLength/2
     wall_Y = wallYLength/2
@@ -68,6 +59,14 @@ def column_force(peds, cols, dt):
             #do stuff here
             return
 
+
+def update_peds_vel(peds, dt):
+    for p in peds:
+        p.update_vel(dt)
+
+def update_peds_pos(peds, dt):
+    for p in peds:
+        p.update_pos(dt)
 
 def write_ped_data(writer, peds, t):
     for i, p in enumerate(peds):
@@ -95,8 +94,8 @@ def betweenPedestriansForce(peds):
 
 # Start main simulation
 def run():
-    T = 1000
-    t = 1000
+    T = 10
+    t = 0
     dt = 0.1
     N = 10
     pedRad = 0.2
@@ -104,14 +103,18 @@ def run():
     outfile = "PedestrianData.csv"
     with open(outfile, 'w') as w:
         csv_writer = csv.writer(w, delimiter=',')
-        csv_writer.writerow([wallXLength,wallYLength])
+        csv_writer.writerow([N,wallXLength,wallYLength])
         while t <= T:
             for p in peds:
                 p.fx = 0.0
                 p.fy = 0.0
-                print(p.x)
-            wall_force(peds, dt)
 
+            betweenPedestriansForce(peds)
+
+            update_peds_vel(peds, dt)
+            wall_force(peds, dt)
+            update_peds_vel(peds, dt)
+            update_peds_pos(peds, dt)
 
             write_ped_data(csv_writer, peds, t)
 
