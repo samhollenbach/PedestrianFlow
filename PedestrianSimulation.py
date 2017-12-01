@@ -63,11 +63,15 @@ def run():
 run()
 
 # calculate social force between pedestrians
-# this will return a list of the x and y components of social
-# force for each pedestrian
+# update array
 def betweenPedestriansForce(peds):
-    for p in peds:
-        print(p.x)
+    A = 0.2 # chosen arbitrarily because the paper doesn't suggest anything
+    B = 5 # also chosen arbitrarily
+    for p1 in peds: # for each pedestrian
+        for p2 in peds: # calculate the social force from each other pedestrian
+            r = p1.rad + p2.rad
+            d = np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
+            f = A * np.exp((r-d)/B)
 
 
 
