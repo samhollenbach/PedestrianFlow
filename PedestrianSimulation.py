@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import integrate
+import csv
 
 class Pedestrian:
 
@@ -67,6 +68,12 @@ def column_force(peds, cols, dt):
             #do stuff here
             return
 
+
+def write_ped_data(writer, peds, t):
+    for i, p in enumerate(peds):
+        writer.writerow([t,i,p.x,p.y,p.vx,p.vy])
+
+
 # Start main simulation
 def run():
     T = 1000
@@ -75,15 +82,27 @@ def run():
     N = 10
     pedRad = 0.2
     peds = create_pedestrians(N, pedRad)
+    outfile = "PedestrianData.csv"
+    with open(outfile, 'w') as w:
+        csv_writer = csv.writer(w, delimiter=',')
+        csv_writer.writerow([wallXLength,wallYLength])
+        while t <= T:
+            for p in peds:
+                p.fx = 0.0
+                p.fy = 0.0
+                print(p.x)
+            wall_force(peds, dt)
 
-    while t <= T:
-        t += dt
-        for p in peds:
-            p.fx = 0.0
-            p.fy = 0.0
-            print(p.x)
-        wall_force(peds, dt)
+
+            write_ped_data(csv_writer, peds, t)
+
+            t += dt
 run()
+
+
+
+
+
 
 
 
