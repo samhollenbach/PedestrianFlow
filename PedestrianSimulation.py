@@ -34,15 +34,35 @@ def create_pedestrians(N,radius):
         peds.append(Pedestrian(-2*N*radius + 4*i*radius, -wallYLength/2 + 2*radius, radius))
     return peds
 
+def create_columns(n_cols):
+    cols = []
+    return cols
 
-def wall_force(peds):
+
+# calculate social force between pedestrians
+# this will return a list of the x and y components of social
+# force for each pedestrian
+def betweenPedestriansForce(peds):
+    for p in peds:
+        print(p.x)
+
+
+
+def wall_force(peds, dt):
     wall_X = wallXLength/2
     wall_Y = wallYLength/2
     for p in peds:
         if np.abs(p.x) > np.abs(wall_X-p.rad):
-            print("do")
+            p.fx = -p.vx/dt
+        if np.abs(p.y) > np.abs(wall_Y-p.rad):
+            p.fy = -p.vy/dt
 
 
+def column_force(peds, cols, dt):
+    for p in peds:
+        for c in cols:
+            #do stuff here
+            return
 
 # Start main simulation
 def run():
@@ -59,15 +79,10 @@ def run():
             p.fx = 0.0
             p.fy = 0.0
             print(p.x)
-
+        wall_force(peds, dt)
 run()
 
-# calculate social force between pedestrians
-# this will return a list of the x and y components of social
-# force for each pedestrian
-def betweenPedestriansForce(peds):
-    for p in peds:
-        print(p.x)
+
 
 
 
