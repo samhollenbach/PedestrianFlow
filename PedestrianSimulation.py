@@ -39,7 +39,7 @@ def create_pedestrians(N,radius):
     return peds
 
 def create_columns(n_cols):
-    cols = []
+    cols = [(0, 0, 3)]
     return cols
 
 
@@ -65,19 +65,30 @@ def wall_force(peds, dt):
 def column_force(peds, cols, dt):
     for p in peds:
         for c in cols:
-            #do stuff here
-            return
+            colX = c[0]
+            colY = c[1]
+            colRad = c[2]
+            d = colRad + p.rad
+
+            dist = np.sqrt((colX-p.x)**2 + (colY-p.y)**2)
+            if dist <= d:
+                theta = np.arcsin((colY-p.y)/dist)
+                if (p.y > colY):
+                    theta += np.pi
+                p.fx += -np.cos(theta)*p.vx/dt
+                p.fy += -np.sin(theta)*p.vy/dt
+
 
 
 def write_ped_data(writer, peds, t):
     for i, p in enumerate(peds):
-        writer.writerow([t,i,p.x,p.y,p.vx,p.vy])
+        writer.writerow([t,i,p.x,p.y,p.vx,p.vy,p.rad])
 
 # calculate social force between pedestrians
 # update array of pedestrians
 def betweenPedestriansForce(peds):
-    A = 0.1 # chosen arbitrarily because the paper doesn't suggest anything
-    B = 1 # also chosen arbitrarily
+    A = 0.2 # chosen arbitrarily because the paper doesn't suggest anything
+    B = 0.5 # also chosen arbitrarily
     for p1 in peds: # for each pedestrian
         for p2 in peds: # calculate the social force from each other pedestrian
             if p1 is p2:
@@ -86,9 +97,8 @@ def betweenPedestriansForce(peds):
             d = np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
             dy = np.abs(p1.y - p2.y)
             theta = np.arcsin(dy/d)
-            print(theta)
             if (p1.x < p2.x):
-                theta += 180
+                theta += np.pi
             f = A * np.exp((r-d)/B)
             fx = f * np.cos(theta)
             fy = f * np.sin(theta)
@@ -98,16 +108,23 @@ def betweenPedestriansForce(peds):
 
 # Start main simulation
 def run():
-    T = 10
+    T = 30
     t = 0
     dt = 0.1
-    N = 10
-    pedRad = 0.2
+    N = 5
+    pedRad = 1
     peds = create_pedestrians(N, pedRad)
-    outfile = "PedestrianData.csv"
+    outfile = "../SimReaderTemp/PedestrianData.csv"
+
+    for p in peds:
+        p.vy = 5
+
     with open(outfile, 'w') as w:
         csv_writer = csv.writer(w, delimiter=',')
         csv_writer.writerow([N,wallXLength,wallYLength])
+        cols = create_columns(1)
+        for c in cols:
+            csv_writer.writerow([-1,c[0],c[1],c[2]])
         while t <= T:
             for p in peds:
                 p.fx = 0.0
@@ -117,6 +134,8 @@ def run():
 
             update_peds_vel(peds, dt)
             wall_force(peds, dt)
+            update_peds_vel(peds,dt)
+            column_force(peds,cols,dt)
             update_peds_vel(peds, dt)
             update_peds_pos(peds, dt)
 
