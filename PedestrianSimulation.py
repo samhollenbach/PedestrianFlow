@@ -132,7 +132,10 @@ def walkingForce(peds, target):
         if (p.x > target[0]):
             temp = -1
         fx = temp*f * np.cos(theta)
-        fy = f * np.sin(theta)
+        temp1 = 1
+        if (p.xy > target[0]):
+            temp1 = -1
+        fy = temp1*f * np.sin(theta)
         p.fx += fx
         p.fy += fy
 
