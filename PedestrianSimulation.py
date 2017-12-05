@@ -25,6 +25,7 @@ class Pedestrian:
         self.fy = 0.0
         
 
+
 #Centered at 0, walls will go from -20 to +20
 wallXLength = 40
 wallYLength = 40
@@ -41,6 +42,14 @@ def create_columns(n_cols):
     cols = []
     return cols
 
+
+def update_peds_vel(peds, dt):
+    for p in peds:
+        p.update_vel(dt)
+
+def update_peds_pos(peds, dt):
+    for p in peds:
+        p.update_pos(dt)
 
 # Change to set vel into wall = 0 if exists and force into wall = 0 if exists
 def wall_force(peds, dt):
@@ -60,14 +69,6 @@ def column_force(peds, cols, dt):
             return
 
 
-def update_peds_vel(peds, dt):
-    for p in peds:
-        p.update_vel(dt)
-
-def update_peds_pos(peds, dt):
-    for p in peds:
-        p.update_pos(dt)
-
 def write_ped_data(writer, peds, t):
     for i, p in enumerate(peds):
         writer.writerow([t,i,p.x,p.y,p.vx,p.vy])
@@ -75,16 +76,19 @@ def write_ped_data(writer, peds, t):
 # calculate social force between pedestrians
 # update array of pedestrians
 def betweenPedestriansForce(peds):
-    A = 0.2 # chosen arbitrarily because the paper doesn't suggest anything
-    B = 5 # also chosen arbitrarily
+    A = 0.1 # chosen arbitrarily because the paper doesn't suggest anything
+    B = 1 # also chosen arbitrarily
     for p1 in peds: # for each pedestrian
         for p2 in peds: # calculate the social force from each other pedestrian
-            if p1 == p2:
+            if p1 is p2:
                 continue
             r = p1.rad + p2.rad
             d = np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
             dy = np.abs(p1.y - p2.y)
             theta = np.arcsin(dy/d)
+            print(theta)
+            if (p1.x < p2.x):
+                theta += 180
             f = A * np.exp((r-d)/B)
             fx = f * np.cos(theta)
             fy = f * np.sin(theta)
