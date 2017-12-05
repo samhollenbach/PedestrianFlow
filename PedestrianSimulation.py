@@ -102,8 +102,28 @@ def betweenPedestriansForce(peds):
             f = A * np.exp((r-d)/B)
             fx = f * np.cos(theta)
             fy = f * np.sin(theta)
-            p1.fx += fx
-            p1.fy += fy
+            p1.fx -= fx
+            p1.fy -= fy
+
+# calculate the walking force of each pedestrian
+# Let's say the desired walking speed is 2
+def walkingForce(peds):
+    ti = 0.5
+    m = 1
+    v0 = 2
+    for p in peds:
+        vtot = np.sqrt(p.vx**2 + p.vy**2)
+        d = np.sqrt((p.x) ** 2 + (p.y - 20) ** 2)
+        dy = np.abs(p.y - 20)
+        theta = np.arcsin(dy / d)
+        if (p.x < 20):
+            theta += np.pi
+        f = m(v0 - vtot)/ti
+        fx = f * np.cos(theta)
+        fy = f * np.sin(theta)
+        p.fx += fx
+        p.fy += fy
+
 
 
 # Start main simulation
