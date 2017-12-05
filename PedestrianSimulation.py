@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import integrate
 import csv
+import random
+import decimal
 
 class Pedestrian:
 
@@ -35,7 +37,9 @@ target = (0, 20)
 def create_pedestrians(N,radius):
     peds = []
     for i in range(N):
-        peds.append(Pedestrian(-2*N*radius + 4*i*radius, -wallYLength/2 + 2*radius, radius))
+        px = wallXLength/2 * float(random.randrange(-99, 99))/100
+        py = wallYLength/2 * float(random.randrange(-99, 99))/100
+        peds.append(Pedestrian(px, py, radius))
     return peds
 
 def create_columns(n_cols):
@@ -88,7 +92,7 @@ def write_ped_data(writer, peds, t):
 # update array of pedestrians
 def betweenPedestriansForce(peds):
     A = 0.2 # chosen arbitrarily because the paper doesn't suggest anything
-    B = 0.5 # also chosen arbitrarily
+    B = 1 # also chosen arbitrarily
     for p1 in peds: # for each pedestrian
         for p2 in peds: # calculate the social force from each other pedestrian
             if p1 is p2:
@@ -97,29 +101,37 @@ def betweenPedestriansForce(peds):
             d = np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
             dy = np.abs(p1.y - p2.y)
             theta = np.arcsin(dy/d)
+            temp = 1
             if (p1.x < p2.x):
-                theta += np.pi
+                #theta += np.pite
+                temp = -1
+            temp1 = 1
+            if (p1.y < p2.y):
+                #theta += np.pite
+                temp1 = -1
             f = A * np.exp((r-d)/B)
-            fx = f * np.cos(theta)
-            fy = f * np.sin(theta)
-            p1.fx -= fx
-            p1.fy -= fy
+            fx = temp*f * np.cos(theta)
+            fy = temp1*f * np.sin(theta)
+            p1.fx += fx
+            p1.fy += fy
 
 # calculate the walking force of each pedestrian
 # Let's say the desired walking speed is 2
-def walkingForce(peds):
+def walkingForce(peds, target):
     ti = 0.5
     m = 1
-    v0 = 2
+    v0 = 1
     for p in peds:
         vtot = np.sqrt(p.vx**2 + p.vy**2)
-        d = np.sqrt((p.x) ** 2 + (p.y - 20) ** 2)
-        dy = np.abs(p.y - 20)
+        d = np.sqrt((p.x - target[0]) ** 2 + (p.y - target[1]) ** 2)
+        dy = np.abs(p.y - target[1])
         theta = np.arcsin(dy / d)
-        if (p.x < 20):
-            theta += np.pi
-        f = m(v0 - vtot)/ti
-        fx = f * np.cos(theta)
+
+        f = m*(v0 - vtot)/ti
+        temp = 1
+        if (p.x > target[0]):
+            temp = -1
+        fx = temp*f * np.cos(theta)
         fy = f * np.sin(theta)
         p.fx += fx
         p.fy += fy
@@ -128,21 +140,19 @@ def walkingForce(peds):
 
 # Start main simulation
 def run():
-    T = 30
+    T = 150
     t = 0
     dt = 0.1
-    N = 5
+    N = 25
     pedRad = 1
     peds = create_pedestrians(N, pedRad)
     outfile = "../SimReaderTemp/PedestrianData.csv"
 
-    for p in peds:
-        p.vy = 5
 
     with open(outfile, 'w') as w:
         csv_writer = csv.writer(w, delimiter=',')
         csv_writer.writerow([N,wallXLength,wallYLength])
-        cols = create_columns(1)
+        cols = []
         for c in cols:
             csv_writer.writerow([-1,c[0],c[1],c[2]])
         while t <= T:
@@ -150,6 +160,8 @@ def run():
                 p.fx = 0.0
                 p.fy = 0.0
 
+            walkingForce(peds, target)
+            update_peds_vel(peds,dt)
             betweenPedestriansForce(peds)
 
             update_peds_vel(peds, dt)
@@ -158,6 +170,10 @@ def run():
             column_force(peds,cols,dt)
             update_peds_vel(peds, dt)
             update_peds_pos(peds, dt)
+
+            for p in peds:
+                if np.sqrt((p.x-target[0])**2 + (p.y-target[1])**2) < p.rad+.5:
+                    peds.remove(p)
 
             write_ped_data(csv_writer, peds, t)
 
