@@ -149,14 +149,14 @@ def walkingForce(peds, target):
 
 # Start main simulation
 def run():
-    T = 40
+    T = 60
     t = 0
-    dt = 0.08
+    dt = 0.05
     N = 40
     pedRad = 1
     peds = create_pedestrians(N, pedRad)
     outfile = "../SimReaderTemp/PedestrianData.csv"
-    max_vel = 3
+    max_vel = 2
 
     with open(outfile, 'w') as w:
         csv_writer = csv.writer(w, delimiter=',')
@@ -183,9 +183,9 @@ def run():
 
             for p in peds:
                 v = np.sqrt(p.vx**2 + p.vy**2)
-                if np.sqrt(p.vx**2 + p.vy**2) > 2:
-                    p.vx *= 2/v
-                    p.vy *= 2/v
+                if np.sqrt(p.vx**2 + p.vy**2) > max_vel:
+                    p.vx *= max_vel/v
+                    p.vy *= max_vel/v
                 if np.sqrt((p.x-target[0])**2 + (p.y-target[1])**2) < p.rad+.5:
                     peds.remove(p)
 

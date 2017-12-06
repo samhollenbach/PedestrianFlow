@@ -34,7 +34,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
     double scaleBar = 0;
 
     boolean saveMovie = true;
-
+    boolean show_columns = false;
 
     public SimReader(File f){
         this.f = f;
@@ -42,7 +42,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
 
 
     public static void main(String[] args) {
-        SimReader sr = new SimReader(new File("sim_data.txt"));
+        SimReader sr = new SimReader(new File("PedestrianData.csv"));
         sr.run();
     }
 
@@ -57,6 +57,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
 
     void run(){
         initialize();
+        setIgnoreRepaint(true);
 
         initializeReader();
 
@@ -103,7 +104,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
         }
         System.out.println(heading + " ");
         String[] heading_data = heading.split(",");
-        particleNumber = Integer.valueOf(heading_data[0]);
+        particleNumber = Integer.valueOf(heading_data[1]);
         System.out.println(particleNumber);
     }
 
@@ -111,7 +112,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
         frame = this;
         windowWidth = 900;
         windowHeight = 500;
-        setTitle("Galaxy Sim");
+        setTitle("Pedestrian Sim");
         setSize(windowWidth, windowHeight);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -139,11 +140,16 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
         int[] topRight = translateCoordinatesToScreen(20,-20,0);
         int[] botLeft = translateCoordinatesToScreen(-20,20,0);
         int[] botRight = translateCoordinatesToScreen(20,20,0);
+        int[] gapLeft = translateCoordinatesToScreen(-1,20,0);
+        int[] gapRight = translateCoordinatesToScreen(1,20,0);
         bbg.setColor(Color.WHITE);
         bbg.drawLine(topLeft[0], topLeft[1], topRight[0], topRight[1]);
         bbg.drawLine(topLeft[0], topLeft[1], botLeft[0], botLeft[1]);
-        bbg.drawLine(botRight[0], botRight[1], botLeft[0], botLeft[1]);
+
         bbg.drawLine(botRight[0], botRight[1], topRight[0], topRight[1]);
+        bbg.drawLine(gapLeft[0], gapLeft[1], botLeft[0], botLeft[1]);
+        bbg.drawLine(botRight[0], botRight[1], gapRight[0], gapRight[1]);
+
 
         double currentIter = 0;
 
@@ -151,7 +157,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
 
         int[] cl = translateCoordinatesToScreen(0,0,0);
         bbg.setColor(Color.RED);
-        bbg.fillOval(cl[0],cl[1],3*(int)scale,3*(int)scale);
+        //bbg.fillOval(cl[0],cl[1],3*(int)scale,3*(int)scale);
 
 
         for(int i = 0; i < particleNumber; i++){
@@ -186,12 +192,11 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
                 System.out.println(numData[2]);
                 int[] col_loc = translateCoordinatesToScreen(numData[1], numData[2],0);
                 System.out.println(numData[3].intValue());
-                //bbg.drawOval(col_loc[0],col_loc[1],numData[3].intValue(),numData[3].intValue());
+                bbg.drawOval(col_loc[0],col_loc[1],numData[3].intValue(),numData[3].intValue());
                 System.out.println(col_loc[1]);
                 bbg.setColor(Color.RED);
-                bbg.fillOval(col_loc[0],col_loc[1],100,100);
+                bbg.fillRect(col_loc[0]-2,col_loc[1]-2,col_loc[0]+2,col_loc[1]+2);
             }
-
 
             if (numData.length < 7){
                 return;
@@ -221,7 +226,22 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
             }else{
                 bbg.fillOval(screenLocation[0],screenLocation[1],ovalSize*(int)scale,ovalSize*(int)scale);
             }
-            //System.out.println("test1");
+
+            if(show_columns){
+                bbg.setColor(Color.RED);
+                int[] topLeft1 = translateCoordinatesToScreen(-12,-2,0);
+                bbg.fillRect(topLeft1[0],topLeft1[1],4*(int)scale,4*(int)scale);
+
+                int[] topLeft2 = translateCoordinatesToScreen(8,8,0);
+                bbg.fillRect(topLeft2[0],topLeft2[1],4*(int)scale,4*(int)scale);
+
+                int[] topLeft3 = translateCoordinatesToScreen(-12,8,0);
+                bbg.fillRect(topLeft3[0],topLeft3[1],4*(int)scale,4*(int)scale);
+
+                int[] topLeft4 = translateCoordinatesToScreen(8,-2,0);
+                bbg.fillRect(topLeft4[0],topLeft4[1],4*(int)scale,4*(int)scale);
+
+            }
 
         }
         String currentIterString = String.valueOf(currentIter);
@@ -229,6 +249,7 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
 
         bbg.setColor(Color.WHITE);
         bbg.drawString(currentIterString,30,50);
+        bbg.drawString("Maximum Occupancy: 40",30,70);
         bbg.setColor(Color.WHITE);
 
         g.drawImage(backBuffer, 0, 0, this);
@@ -287,6 +308,9 @@ public class SimReader extends JFrame implements KeyListener, MouseWheelListener
         }
         if(e.getKeyCode() == KeyEvent.VK_DOWN){
             readerY += moveSpeed;
+        }
+        if(e.getKeyCode() == KeyEvent.VK_C){
+            show_columns = !show_columns;
         }
     }
 
